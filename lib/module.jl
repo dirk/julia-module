@@ -1,4 +1,4 @@
-global _modules = HashTable{String,Any}()
+global _modules = HashTable{Symbol,Any}()
 global _module_currently_defining = false
 
 function _module_fix_module_name(q::QuoteNode)
@@ -17,7 +17,7 @@ end
 macro module_begin(module_name_expr)
   #module_name = string(module_name_expr)
   module_name = _module_fix_module_name(module_name_expr)
-  _modules[module_name] = HashTable{String,Any}()
+  _modules[symbol(module_name)] = HashTable{String,Any}()
   
   nothing
 end
@@ -29,7 +29,7 @@ macro module_end(module_name_expr)
   typename = _module_type_for_name(module_name)
   
   # Get pairs (key, value) from the module hash
-  pairs = { p | p = _modules[module_name] }
+  pairs = { p | p = _modules[symbol(module_name)] }
   
   # Build an array of expressions for the type fields (eg. test::Int)
   block_exprs = {}
@@ -71,7 +71,7 @@ function _module_add_member(module_name_expr, expr)
     function_name_expr.args[1] = function_ptr
     
     eval(expr)
-    _modules[module_name][name] = eval(:($function_ptr))
+    _modules[symbol(module_name)][name] = eval(:($function_ptr))
     
   elseif expr.head == symbol("=")
     if isa(expr.args[1], Symbol)
@@ -80,7 +80,7 @@ function _module_add_member(module_name_expr, expr)
       # Overwrite the lvalue so it doesn't pollute the original namespace.
       expr.args[1] = gensym()
       
-      _modules[module_name][name] = eval(expr.args[2])
+      _modules[symbol(module_name)][name] = eval(expr.args[2])
     end
   end
   # TODO: Add tuple handling to enable multiple assignment like: a, b = 1, 2
@@ -96,27 +96,5 @@ macro module_add(module_name_expr, expr)
 end
 
 
-@module_begin Test
 
-@module_add Test function testing(n)
-  println(n)
-end
-#module_add "Test" test2 = 2
-
-@module_end Test
-
-#show(Test.test2)
-#println()
-
-#@module_add :test a, b = 1, 2
-
-#show(_modules)
-#println()
-
-#_modules["test"]["testing"]("test")
-
-
-
-
-#testing("test")
   
