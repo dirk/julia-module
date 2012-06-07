@@ -32,7 +32,7 @@ type TestGroupResult
   TestGroupResult() = new(0, 0)
 end
 
-global test_groups = HashTable{Any,TestGroupResult}()
+global test_groups = Dict{Any,TestGroupResult}()
 global current_test_group = false
 
 function test_group(name)

@@ -1,5 +1,6 @@
-global _modules = HashTable{Symbol,Any}()
+global _modules = Dict{Symbol,Any}()
 global _module_currently_defining = false
+
 
 function _module_fix_module_name(q::QuoteNode)
   string(q.value)
@@ -17,10 +18,12 @@ end
 macro module_begin(module_name_expr)
   #module_name = string(module_name_expr)
   module_name = _module_fix_module_name(module_name_expr)
-  _modules[symbol(module_name)] = HashTable{String,Any}()
+  _modules[symbol(module_name)] = Dict{String,Any}()
   
-  nothing
+  return nothing
 end
+
+
 
 macro module_end(module_name_expr)
   # The name of the final module (eg. Test)
@@ -29,7 +32,7 @@ macro module_end(module_name_expr)
   typename = _module_type_for_name(module_name)
   
   # Get pairs (key, value) from the module hash
-  pairs = { p | p = _modules[symbol(module_name)] }
+  pairs = {p for p in _modules[symbol(module_name)]}
   
   # Build an array of expressions for the type fields (eg. test::Int)
   block_exprs = {}
@@ -44,13 +47,13 @@ macro module_end(module_name_expr)
   }, Any))
   
   # Initialize an instance of the type with its memebers
-  instance = eval(symbol(typename))({ p[2] | p = pairs}...)
+  instance = eval(symbol(typename))({ p[2] for p in pairs }...)
   # Make the name of the module global
   eval(Expr(:global, {symbol(module_name)}, Any))
   # Assign the name of the module to the instance
   eval(Expr(symbol("="), {symbol(module_name), instance}, Any))
   
-  nothing
+  return nothing
 end
 
 # Given a name expression and body expression, add the body expression into
@@ -94,7 +97,4 @@ end
 macro module_add(module_name_expr, expr)
   _module_add_member(module_name_expr, expr)
 end
-
-
-
   

@@ -1,0 +1,10 @@
+{
+  "name": "modules",
+  "description": "A hackety-hax solution to create modules to group variables",
+  "version": "0.0.1",
+  "versions": ["0.0.1"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dirk/julia-module.git"
+  }
+}
