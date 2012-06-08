@@ -7,5 +7,5 @@
     "type": "git",
     "url": "https://github.com/dirk/julia-module.git"
   },
-  "enclose": false
+  "module": false
 }
